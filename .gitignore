@@ -1,0 +1,17 @@
+.env
+node_modules/
+dist/
+build/
+.DS_Store
+.env
+*.env.local
+config/*.json
+secrets/
+.env
+*.env.local
+config/*.json
+secrets/
+.env
+*.env.local
+config/*.json
+secrets/
