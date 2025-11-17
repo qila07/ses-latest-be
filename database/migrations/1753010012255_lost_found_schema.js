@@ -12,9 +12,16 @@ class LostFoundSchema extends Schema {
       table.string('kategori', 100).notNullable()
       table.string('lokasi', 255).notNullable()
       table.dateTime('waktu').notNullable()
+      
+      // PERBAIKAN: Ubah nilai enum menjadi uppercase dan tambah opsi
+      table.enu('metode_pengembalian', ['Resepsionis', 'Chat Pribadi']).nullable()
+      
+      table.string('bukti_penyerahan', 500).nullable() // PERBAIKAN: Perbesar panjang string
       table.string('kontak', 20).notNullable()
       table.text('deskripsi')
-      table.string('gambar', 255)
+      table.text('ciri_ciri_unik').nullable()
+      table.text('informasi_tambahan').nullable()
+      table.string('gambar', 500) // PERBAIKAN: Perbesar panjang string
       table.integer('created_by').unsigned().notNullable().references('id').inTable('users').onDelete('CASCADE')
       table.timestamps()
     })
@@ -26,6 +33,3 @@ class LostFoundSchema extends Schema {
 }
 
 module.exports = LostFoundSchema
-
-
-

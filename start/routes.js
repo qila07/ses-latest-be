@@ -2098,7 +2098,13 @@ Route.get("/lostfound/arsip", async ({ response }) => {
 Route.get('/lostfound/kategori', 'LostFoundController.getAllKategori')
 Route.get("/lostfound", "LostFoundController.getLostFound");
 Route.get("/lostfound/:id", "LostFoundController.getLostFoundById");
-// Route.get("/lostfound/:id", "LostFoundController.show");
+
+// 🟢 TAMBAHKAN ROUTE INI UNTUK LAPORAN PENGEMBALIAN
+Route.get('/lostfound/laporan', 'LostFoundController.getLaporanPengembalian')
+Route.get('/lostfound/laporan/:lostFoundId', 'LostFoundController.getLaporanByLostFoundId')
+Route.post('/lostfound/laporan', 'LostFoundController.postLaporanPengembalian')
+Route.put("/lostfound/laporan/:id/status", "LostFoundController.updateStatusLaporan"); // Untuk update status
+
 Route.post("/lostfound", "LostFoundController.postLostFound");
 Route.post("/lostfound/save-subscription", "LostFoundController.saveSubscription")
 Route.delete("/lostfound/arsip", "LostFoundController.purgeArchived")
@@ -2107,6 +2113,96 @@ Route.delete("/lostfound/:id", "LostFoundController.deleteLostFound");
 Route.post("/lostfound/subscription", "LostFoundController.saveSubscription");
 Route.post('/upload', 'UploadController.store')
 
+// Route untuk test insert manual
+Route.post('/test-insert-manual', async ({ request, response }) => {
+  const Database = use('Database');
+  
+  try {
+    const testData = {
+      lost_and_found_id: 1,
+      jenis_form: 'Penemuan',
+      nama_lengkap: 'Test User Manual',
+      kelas: '7A',
+      kontak_whatsapp: '08123456789',
+      lokasi_penemuan: 'Test Location',
+      waktu_penemuan: new Date().toISOString().slice(0, 19).replace('T', ' ')
+    };
+
+    console.log('🔄 Test insert manual dengan data:', testData);
+    
+    const [insertId] = await Database.table('lostfound_laporan_pengembalian').insert(testData);
+    
+    console.log('✅ Test insert berhasil dengan ID:', insertId);
+    
+    const insertedData = await Database.table('lostfound_laporan_pengembalian').where('id', insertId).first();
+    
+    return response.json({
+      success: true,
+      message: 'Test insert berhasil',
+      insertId: insertId,
+      data: insertedData
+    });
+    
+  } catch (error) {
+    console.error('❌ Test insert error:', error);
+    return response.status(500).json({
+      success: false,
+      error: error.message,
+      sql: error.sql
+    });
+  }
+});
+
+// Route untuk cek auto increment
+Route.get('/debug/auto-increment', async ({ response }) => {
+  try {
+    const Database = use('Database');
+    const result = await Database.raw(`
+      SELECT AUTO_INCREMENT 
+      FROM information_schema.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'lostfound_laporan_pengembalian'
+    `);
+    
+    return response.json({
+      success: true,
+      auto_increment: result[0][0]?.AUTO_INCREMENT || 'Tidak ditemukan'
+    });
+  } catch (error) {
+    return response.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Route untuk cek foreign key
+Route.get('/debug/foreign-key', async ({ response }) => {
+  try {
+    const Database = use('Database');
+    const result = await Database.raw(`
+      SELECT 
+        TABLE_NAME,
+        COLUMN_NAME,
+        CONSTRAINT_NAME,
+        REFERENCED_TABLE_NAME,
+        REFERENCED_COLUMN_NAME
+      FROM information_schema.KEY_COLUMN_USAGE
+      WHERE TABLE_NAME = 'lostfound_laporan_pengembalian'
+      AND REFERENCED_TABLE_NAME IS NOT NULL
+    `);
+    
+    return response.json({
+      success: true,
+      foreign_keys: result[0]
+    });
+  } catch (error) {
+    return response.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 
 
